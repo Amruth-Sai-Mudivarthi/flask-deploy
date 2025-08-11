@@ -1,0 +1,443 @@
+{% extends "layout.html" %}
+{% block title %}SecureAuth Pro - Entry Monitoring{% endblock %}
+
+{% block styles %}
+<style>
+    .monitoring-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .monitoring-header {
+        background: rgba(30, 30, 40, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(60, 60, 80, 0.5);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .monitoring-header::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #3a4a8a, #5a3a7a, #8a3a6a, #aa3a5a);
+        border-radius: 20px;
+        z-index: -1;
+        animation: borderFlow 3s linear infinite;
+        opacity: 0.7;
+    }
+
+    @keyframes borderFlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .monitoring-header .icon {
+        font-size: 4rem;
+        background: linear-gradient(135deg, #4CAF50, #2E7D32);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .monitoring-header h2 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+        color: #ffffff;
+    }
+
+    .monitoring-header p {
+        font-size: 1.1rem;
+        opacity: 0.8;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(76, 175, 80, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        color: #4CAF50;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        margin-top: 1rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .video-section {
+        background: rgba(30, 30, 40, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(60, 60, 80, 0.5);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .video-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .video-container {
+        position: relative;
+        background: rgba(0, 0, 0, 0.9);
+        border-radius: 20px;
+        overflow: hidden;
+        width: 100%;
+        height: 400px;
+        border: 3px solid;
+        border-image: linear-gradient(45deg, #3a4a8a, #5a3a7a, #8a3a6a, #aa3a5a) 1;
+        box-shadow: 
+            0 0 30px rgba(58, 74, 138, 0.4),
+            inset 0 0 50px rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .video-container:hover {
+        transform: scale(1.02);
+        box-shadow: 
+            0 0 40px rgba(58, 74, 138, 0.6),
+            inset 0 0 50px rgba(255, 255, 255, 0.1);
+    }
+
+    .video-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 17px;
+    }
+
+    .monitoring-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 300px;
+        height: 200px;
+        border: 3px solid;
+        border-image: linear-gradient(45deg, #2d8a82, #2a6e5f, #2d8a82) 1;
+        transform: translate(-50%, -50%);
+        border-radius: 15px;
+        box-shadow: 
+            0 0 0 9999px rgba(0, 0, 0, 0.4),
+            0 0 30px rgba(45, 138, 130, 0.8),
+            inset 0 0 30px rgba(255, 255, 255, 0.1);
+        animation: monitoringPulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes monitoringPulse {
+        0% {
+            border-width: 3px;
+            box-shadow: 
+                0 0 0 9999px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(45, 138, 130, 0.8),
+                inset 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+        100% {
+            border-width: 5px;
+            box-shadow: 
+                0 0 0 9999px rgba(0, 0, 0, 0.3),
+                0 0 50px rgba(45, 138, 130, 1),
+                inset 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    .alert-section {
+        background: rgba(50, 30, 30, 0.8);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(100, 60, 60, 0.5);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        display: none;
+        animation: slideInDown 0.5s ease-out;
+    }
+
+    @keyframes slideInDown {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .alert-section.danger {
+        background: rgba(70, 30, 30, 0.8);
+        border-color: rgba(244, 67, 54, 0.3);
+    }
+
+    .alert-section h3 {
+        color: #f44336;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    .alert-section p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .progress-section {
+        background: rgba(30, 30, 40, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(60, 60, 80, 0.5);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 1rem 0;
+        position: relative;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #4CAF50, #2E7D32);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    .progress-text {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #ffffff;
+    }
+
+    .progress-description {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .info-section {
+        background: rgba(30, 30, 40, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(60, 60, 80, 0.5);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .info-section h3 {
+        color: #4ecdc4;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .info-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-section li {
+        padding: 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .info-section li::before {
+        content: '🔍';
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .video-container {
+            height: 300px;
+        }
+        
+        .monitoring-overlay {
+            width: 250px;
+            height: 150px;
+        }
+        
+        .monitoring-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .monitoring-header .icon {
+            font-size: 3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="monitoring-container">
+    <div class="monitoring-header">
+        <i class="fas fa-shield-check icon"></i>
+        <h2>Access Granted, {{ user_name }}</h2>
+        <p>Please proceed through the entry point. Monitoring for tailgating...</p>
+        <div class="status-badge">
+            <i class="fas fa-eye"></i>
+            Monitoring Active
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h3><i class="fas fa-info-circle me-2"></i>Monitoring Process</h3>
+        <ul>
+            <li>Security cameras are monitoring the entry point</li>
+            <li>Detecting for unauthorized personnel following you</li>
+            <li>Monitoring will continue for 8 seconds</li>
+            <li>Stay within the camera view during this time</li>
+            <li>Do not allow others to follow you through the entry</li>
+        </ul>
+    </div>
+
+    <div class="video-section">
+        <div class="video-container">
+            <img src="{{ url_for('tailgating_feed') }}" alt="Monitoring Feed">
+            <div class="monitoring-overlay"></div>
+        </div>
+    </div>
+
+    <div id="tailgating-alert" class="alert-section danger">
+        <h3><i class="fas fa-exclamation-triangle me-2"></i>TAILGATING DETECTED!</h3>
+        <p>Multiple people detected. This event has been logged and security has been notified.</p>
+    </div>
+
+    <div class="progress-section">
+        <div class="progress-text">Monitoring Progress</div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="progress-description">Proceeding to final location check...</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const monitoringTime = 8000; // 8 seconds
+    let tailgatingDetected = false;
+    let progress = 0;
+    const progressFill = document.querySelector('.progress-fill');
+    const progressText = document.querySelector('.progress-text');
+
+    // Update progress bar
+    const updateProgress = () => {
+        if (progress < 100) {
+            progress += (100 / (monitoringTime / 100)); // Increment based on time
+            if (progress > 100) progress = 100;
+            
+            progressFill.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                progressText.textContent = 'Monitoring Complete';
+            }
+        }
+    };
+
+    // Update progress every 100ms
+    const progressInterval = setInterval(updateProgress, 100);
+
+    // After 8 seconds, redirect to the new location check page
+    const redirectTimer = setTimeout(() => {
+        if (!tailgatingDetected) {
+            window.location.href = "{{ url_for('post_auth_location_check') }}";
+        }
+    }, monitoringTime);
+
+    // This function checks for the tailgating status from the server
+    function checkStatus() {
+        fetch("{{ url_for('check_tailgating_status') }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.tailgating_detected && !tailgatingDetected) {
+                    tailgatingDetected = true;
+                    const alertSection = document.getElementById('tailgating-alert');
+                    alertSection.style.display = 'block';
+                    
+                    // Stop the progress and redirect
+                    clearTimeout(redirectTimer);
+                    clearInterval(progressInterval);
+                    
+                    // Add visual feedback
+                    alertSection.style.animation = 'shake 0.5s ease-in-out';
+                    
+                    // Redirect after showing alert
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('index') }}";
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking tailgating status:', error);
+            });
+    }
+
+    const pollingInterval = setInterval(checkStatus, 1000);
+
+    // Add shake animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}

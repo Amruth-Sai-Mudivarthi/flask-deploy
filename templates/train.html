@@ -1,0 +1,459 @@
+{% extends "layout.html" %}
+{% block title %}SecureAuth Pro - Train Model{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: url('https://source.unsplash.com/random/1920x1080/?ai,neural,network,dark') no-repeat center center fixed;
+        background-size: cover;
+        color: #f0f0f0;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(10, 10, 20, 0.85);
+        z-index: -1;
+    }
+
+    .train-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .train-header {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .train-header:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .train-header::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0.7;
+        animation: borderFlow 8s linear infinite;
+        background-size: 300% 300%;
+    }
+
+    @keyframes borderFlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .train-header .icon {
+        font-size: 4rem;
+        background: linear-gradient(135deg, #4ecdc4 0%, #556270 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .train-header h2 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 2.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .train-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        line-height: 1.6;
+    }
+
+    .info-section {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .info-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .info-section h3 {
+        color: #4ecdc4;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .info-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-card:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .info-card .icon {
+        font-size: 2.5rem;
+        color: #4ecdc4;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .info-card h4 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .info-card p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+
+    .action-section {
+        text-align: center;
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .action-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .btn-train {
+        background: linear-gradient(135deg, #4ecdc4 0%, #556270 100%);
+        box-shadow: 0 4px 20px rgba(78, 205, 196, 0.4);
+        border: none;
+        border-radius: 25px;
+        padding: 18px 50px;
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-train::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transition: all 0.5s ease;
+        transform: translate(-50%, -50%);
+    }
+
+    .btn-train:hover::before {
+        width: 400px;
+        height: 400px;
+    }
+
+    .btn-train:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(78, 205, 196, 0.6);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-train:active {
+        transform: translateY(0);
+    }
+
+    .warning-section {
+        background: rgba(255, 193, 7, 0.15);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        color: rgba(255, 255, 255, 0.95);
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .warning-section h4 {
+        color: #ffc107;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .warning-section p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .process-steps {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .process-steps:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .process-steps h3 {
+        color: #4ecdc4;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .steps-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .steps-list li {
+        padding: 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .steps-list li:last-child {
+        border-bottom: none;
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4ecdc4 0%, #556270 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .step-content {
+        flex: 1;
+    }
+
+    .step-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .step-description {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .train-header h2 {
+            font-size: 2rem;
+        }
+        
+        .train-header .icon {
+            font-size: 3rem;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .btn-train {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="train-container">
+    <div class="train-header">
+        <i class="fas fa-cogs icon"></i>
+        <h2>Train the Face Recognition Model</h2>
+        <p>
+            Click the button below to train the model on all the face images in the dataset. 
+            This must be done after adding new users or updating face data. 
+            This process might take a few moments.
+        </p>
+    </div>
+
+    <div class="process-steps">
+        <h3><i class="fas fa-list-ol"></i>Training Process</h3>
+        <ul class="steps-list">
+            <li>
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">Data Collection</div>
+                    <div class="step-description">Gather all captured face images from the dataset</div>
+                </div>
+            </li>
+            <li>
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">Feature Extraction</div>
+                    <div class="step-description">Extract facial features and create training vectors</div>
+                </div>
+            </li>
+            <li>
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">Model Training</div>
+                    <div class="step-description">Train the recognition model using the extracted features</div>
+                </div>
+            </li>
+            <li>
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">Validation</div>
+                    <div class="step-description">Test the model accuracy and save the trained model</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="info-section">
+        <h3><i class="fas fa-info-circle"></i>Important Information</h3>
+        <div class="info-grid">
+            <div class="info-card">
+                <i class="fas fa-clock icon"></i>
+                <h4>Processing Time</h4>
+                <p>The training process typically takes 30-60 seconds depending on the number of users and images.</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-users icon"></i>
+                <h4>User Coverage</h4>
+                <p>All registered users in the system will be included in the training process.</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-shield-alt icon"></i>
+                <h4>Security</h4>
+                <p>The training process is secure and only processes authorized user data.</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-sync icon"></i>
+                <h4>Updates</h4>
+                <p>Run this process whenever new users are added or face data is updated.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-section">
+        <h3 style="margin-bottom: 2rem; color: rgba(255, 255, 255, 0.95);">
+            <i class="fas fa-play-circle"></i> Ready to Train?
+        </h3>
+        <a href="{{ url_for('train_model') }}" class="btn-train" id="trainBtn">
+            <i class="fas fa-cogs"></i>
+            Start Training Process
+        </a>
+    </div>
+
+    <div class="warning-section">
+        <h4><i class="fas fa-exclamation-triangle"></i> Important Note</h4>
+        <p>
+            Please ensure all face capture processes are complete before starting the training. 
+            The training will use all available face images in the system.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const trainBtn = document.getElementById('trainBtn');
+        
+        trainBtn.addEventListener('click', function(e) {
+            // Add loading state
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Training in Progress...';
+            this.style.pointerEvents = 'none';
+            
+            // Add visual feedback
+            this.style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
+            this.style.boxShadow = '0 4px 20px rgba(255, 193, 7, 0.4)';
+            
+            // Simulate some delay for better UX
+            setTimeout(() => {
+                // The form will submit naturally
+            }, 500);
+        });
+    });
+</script>
+{% endblock %}

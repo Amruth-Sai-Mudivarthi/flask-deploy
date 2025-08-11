@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Face Recogniser</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 80%; max-width: 1200px; }
+        h1 { text-align: center; color: #333; }
+        .input-group { margin-bottom: 15px; display: flex; align-items: center; justify-content: center;}
+        .input-group label { margin-right: 10px; font-weight: bold; width: 80px; text-align: right; }
+        .input-group input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 200px; }
+        .button-group { text-align: center; margin-top: 20px; }
+        .button-group button { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 5px; transition: background-color 0.3s ease; }
+        .button-group button:hover { background-color: #45a049; }
+        .message { margin-top: 20px; padding: 10px; background-color: #e7f3fe; border: 1px solid #d4eafb; border-radius: 4px; text-align: center; color: #333; }
+        .video-container { margin-top: 20px; display: flex; justify-content: center; position: relative; width: 640px; height: 480px; background-color: #000; }
+        video { transform: scaleX(-1); border-radius: 8px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;}
+        canvas { position: absolute; top: 0; left: 0; transform: scaleX(-1); border-radius: 8px; } /* Mirrored for natural display */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Face Recognition System</h1>
+
+        <div class="input-group">
+            <label for="id">ID:</label>
+            <input type="text" id="id" placeholder="Enter ID">
+        </div>
+        <div class="input-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" placeholder="Enter Name">
+        </div>
+
+        <div class="button-group">
+            <button onclick="startCapture('takeImages')">Take Samples</button>
+            <button onclick="trainImages()">Train Model</button>
+            <button onclick="startCapture('trackImages')">Start Recognition</button>
+            <button onclick="stopCapture()">Stop</button>
+        </div>
+
+        <div class="message" id="message">Ready</div>
+
+        <div class="video-container">
+            <video id="videoElement" autoplay muted></video>
+            <canvas id="canvasElement"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoElement');
+        const canvas = document.getElementById('canvasElement');
+        const context = canvas.getContext('2d');
+        const messageDisplay = document.getElementById('message');
+        let stream;
+        let captureInterval;
+        let currentMode = null; // 'takeImages' or 'trackImages'
+
+        // Function to display messages
+        function showMessage(msg, type = 'info') {
+            messageDisplay.textContent = msg;
+            messageDisplay.style.backgroundColor = {
+                'info': '#e7f3fe',
+                'success': '#d4edda',
+                'error': '#f8d7da',
+                'warning': '#fff3cd'
+            }[type];
+            messageDisplay.style.borderColor = {
+                'info': '#d4eafb',
+                'success': '#c3e6cb',
+                'error': '#f5c6cb',
+                'warning': '#ffeeba'
+            }[type];
+        }
+
+        // Start webcam and capture frames
+        async function startCapture(mode) {
+            currentMode = mode;
+            showMessage('Starting webcam...');
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.play();
+
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    if (captureInterval) clearInterval(captureInterval);
+
+                    // Start sending frames to backend based on mode
+                    if (currentMode === 'takeImages') {
+                        showMessage('Collecting samples. Look at the camera.');
+                        let samplesTaken = 0;
+                        const targetSamples = 60; // Max samples to take
+                        captureInterval = setInterval(() => {
+                            if (samplesTaken >= targetSamples) {
+                                showMessage(`Finished collecting ${targetSamples} samples.`, 'success');
+                                clearInterval(captureInterval);
+                                return;
+                            }
+                            captureAndSendFrame(mode);
+                            samplesTaken++; // Increment even if no face detected, for simplicity
+                        }, 500); // Capture every 0.5 seconds for samples
+                    } else if (currentMode === 'trackImages') {
+                        showMessage('Tracking faces...');
+                        captureInterval = setInterval(() => captureAndSendFrame(mode), 100); // Capture every 0.1 seconds for tracking
+                    }
+                };
+            } catch (err) {
+                console.error("Error accessing webcam: ", err);
+                showMessage("Error accessing webcam. Please ensure it's connected and allowed.", 'error');
+            }
+        }
+
+        // Stop webcam and clear intervals
+        function stopCapture() {
+            if (captureInterval) {
+                clearInterval(captureInterval);
+                captureInterval = null;
+            }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                stream = null;
+            }
+            context.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+            showMessage('Webcam stopped.', 'info');
+            currentMode = null;
+        }
+
+        // Capture frame from video, draw on canvas, and send to backend
+        async function captureAndSendFrame(mode) {
+            if (!video.srcObject) return; // Ensure video is playing
+
+            // Draw the current video frame onto the canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Get image data as base64
+            const imageDataURL = canvas.toDataURL('image/jpeg', 0.8); // JPEG format, quality 0.8
+
+            try {
+                let url;
+                let bodyData = { image: imageDataURL };
+
+                if (mode === 'takeImages') {
+                    const id = document.getElementById('id').value;
+                    const name = document.getElementById('name').value;
+                    if (!id || !name) {
+                        showMessage('Please enter both ID and Name to take samples.', 'warning');
+                        stopCapture(); // Stop if fields are empty
+                        return;
+                    }
+                    url = '/take_images';
+                    bodyData.id = id;
+                    bodyData.name = name;
+                } else if (mode === 'trackImages') {
+                    url = '/process_frame';
+                } else {
+                    return; // Unknown mode
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showMessage(result.message, 'success');
+                } else if (result.status === 'info') {
+                     showMessage(result.message, 'info');
+                } else if (result.status === 'warning') {
+                     showMessage(result.message, 'warning');
+                }
+                else if (result.status === 'error') {
+                    showMessage(result.message, 'error');
+                    if (mode === 'takeImages') stopCapture(); // Stop on error for takeImages
+                }
+
+                // If in tracking mode, draw the processed image from the backend
+                if (mode === 'trackImages' && result.processed_image) {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Clear canvas and draw the mirrored image
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.drawImage(img, 0, 0, canvas.width, canvas.height); // Draw processed image
+                        // Optionally draw rectangles/labels on frontend if not already embedded in processed_image
+                        // This assumes the backend returns an image with drawn elements.
+                        // If backend only returns coordinates, you'd draw them here.
+                    };
+                    img.src = 'data:image/jpeg;base64,' + result.processed_image;
+                }
+
+            } catch (error) {
+                console.error("Error sending frame to backend: ", error);
+                showMessage("Communication error with server.", 'error');
+                stopCapture(); // Stop on network errors
+            }
+        }
+
+        // Function to train images
+        async function trainImages() {
+            showMessage('Training model...', 'info');
+            try {
+                const response = await fetch('/train_images', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showMessage(result.message, 'success');
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                console.error("Error training model: ", error);
+                showMessage("Error communicating with server for training.", 'error');
+            }
+        }
+    </script>
+</body>
+</html>

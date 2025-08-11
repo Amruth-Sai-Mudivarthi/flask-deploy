@@ -1,0 +1,328 @@
+{% extends "layout.html" %}
+{% block title %}SecureAuth Pro - Barcode Login{% endblock %}
+
+{% block styles %}
+<style>
+
+body{
+    
+background: 
+            linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.95)),
+            url('https://images.unsplash.com/photo-1639762681057-408e52192e55?q=80&w=2232&auto=format&fit=crop') no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
+    }
+    
+    /* Or if you prefer a pure gradient without image: */
+    /*
+    body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        min-height: 100vh;
+    }
+    */
+    
+    /* Keep all your existing styles below */
+    .scanner-container {
+        position: relative;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .video-container {
+        position: relative;
+        background: rgba(0, 0, 0, 0.95);
+        border-radius: 25px;
+        overflow: hidden;
+        width: 100%;
+        height: 400px;
+        border: 3px solid var(--card-border);
+        box-shadow: 
+            0 0 30px rgba(0, 212, 255, 0.2),
+            inset 0 0 50px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .video-container:hover {
+        transform: scale(1.02);
+        box-shadow: 
+            0 0 40px rgba(0, 212, 255, 0.4),
+            inset 0 0 50px rgba(0, 0, 0, 0.5);
+        border-color: var(--accent-color);
+    }
+    
+    #video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+        border-radius: 22px;
+    }
+    
+    .scanner-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 70%;
+        height: 30%;
+        border: 3px solid var(--accent-color);
+        transform: translate(-50%, -50%);
+        box-shadow: 
+            0 0 0 9999px rgba(0, 0, 0, 0.6),
+            0 0 30px rgba(0, 212, 255, 0.6),
+            inset 0 0 30px rgba(0, 212, 255, 0.1);
+        animation: scannerPulse 2s ease-in-out infinite alternate;
+        border-radius: 15px;
+    }
+    
+    @keyframes scannerPulse {
+        0% {
+            border-width: 3px;
+            box-shadow: 
+                0 0 0 9999px rgba(0, 0, 0, 0.6),
+                0 0 30px rgba(0, 212, 255, 0.6),
+                inset 0 0 30px rgba(0, 212, 255, 0.1);
+        }
+        100% {
+            border-width: 5px;
+            box-shadow: 
+                0 0 0 9999px rgba(0, 0, 0, 0.5),
+                0 0 50px rgba(0, 212, 255, 0.8),
+                inset 0 0 30px rgba(0, 212, 255, 0.2);
+        }
+    }
+    
+    .scanner-line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        animation: scanLine 2s linear infinite;
+    }
+    
+    @keyframes scanLine {
+        0% { top: 0; opacity: 1; }
+        50% { opacity: 1; }
+        100% { top: 100%; opacity: 0; }
+    }
+    
+    .info-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        text-align: center;
+        color: var(--text-secondary);
+        box-shadow: var(--shadow-dark);
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-glow);
+        border-color: rgba(0, 212, 255, 0.3);
+    }
+    
+    .info-card .icon {
+        font-size: 3rem;
+        background: linear-gradient(45deg, var(--accent-color), var(--success-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .status-indicator {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 50px;
+        padding: 10px 20px;
+        color: var(--text-primary);
+        font-weight: 600;
+        border: 1px solid var(--card-border);
+    }
+    
+    .status-indicator.scanning {
+        background: rgba(0, 255, 136, 0.2);
+        border-color: rgba(0, 255, 136, 0.3);
+        animation: statusPulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes statusPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .alternative-login {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--card-border);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        margin-top: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .alternative-login:hover {
+        background: rgba(30, 30, 30, 0.9);
+        transform: translateY(-2px);
+        border-color: var(--accent-color);
+    }
+    
+    .alternative-login a {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .alternative-login a:hover {
+        color: var(--success-color);
+        transform: translateX(5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div class="card-header">
+        <h2><i class="fas fa-qrcode me-2"></i>Barcode Authentication</h2>
+    </div>
+    <div class="card-body">
+        <div class="info-card mb-4">
+            <i class="fas fa-camera icon"></i>
+            <h5>Ready to Scan</h5>
+            <p class="mb-0">Position your barcode within the scanning area below</p>
+        </div>
+        
+        <div class="scanner-container">
+            <div class="video-container">
+                <video id="video" autoplay playsinline muted></video>
+                <div class="scanner-overlay">
+                    <div class="scanner-line"></div>
+                </div>
+                <div class="status-indicator scanning">
+                    <i class="fas fa-radar me-2"></i>Scanning...
+                </div>
+            </div>
+        </div>
+
+        <canvas id="canvas" style="display:none;"></canvas>
+        <div id="status" class="mt-4"></div>
+    </div>
+    
+    <div class="card-footer">
+        <div class="alternative-login">
+            <a href="{{ url_for('face_auth_page') }}">
+                <i class="fas fa-user-circle"></i>
+                Forgot your ID? Use Face Recognition instead
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const statusDiv = document.getElementById('status');
+    const statusIndicator = document.querySelector('.status-indicator');
+    let scanning = true;
+
+    // Enhanced camera access with better error handling
+    navigator.mediaDevices.getUserMedia({ 
+        video: { 
+            width: { ideal: 1280 }, 
+            height: { ideal: 720 },
+            facingMode: 'environment'
+        } 
+    })
+    .then(function(stream) {
+        video.srcObject = stream;
+        video.play();
+        statusIndicator.innerHTML = '<i class="fas fa-radar me-2"></i>Ready to scan';
+        requestAnimationFrame(tick);
+    })
+    .catch(function(err) {
+        console.error("Error accessing camera: ", err);
+        statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Camera Error';
+        statusIndicator.className = 'status-indicator';
+        statusDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Camera Access Required</strong><br>
+                Please grant camera permission and refresh the page to continue.
+            </div>`;
+    });
+
+    function tick() {
+        if (!scanning || video.readyState !== 4) {
+            if(scanning) requestAnimationFrame(tick);
+            return;
+        }
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Flip the canvas to match the mirrored video
+        context.translate(canvas.width, 0);
+        context.scale(-1, 1);
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        context.setTransform(1, 0, 0, 1, 0, 0);
+
+        const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+
+        fetch("{{ url_for('scan_barcode') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: dataURL })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                scanning = false;
+                video.srcObject.getTracks().forEach(track => track.stop());
+                statusIndicator.innerHTML = '<i class="fas fa-check me-2"></i>Success!';
+                statusIndicator.className = 'status-indicator';
+                statusIndicator.style.background = 'rgba(0, 255, 136, 0.3)';
+                statusIndicator.style.borderColor = 'rgba(0, 255, 136, 0.5)';
+                statusDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Barcode Detected!</strong><br>
+                        Redirecting you now...
+                    </div>`;
+                
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1500);
+            } else {
+                requestAnimationFrame(tick); // Continue scanning if no barcode is found
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            requestAnimationFrame(tick); // Continue scanning on error
+        });
+    }
+
+    // Add visual feedback for successful scanning
+    function showScanSuccess() {
+        const overlay = document.querySelector('.scanner-overlay');
+        overlay.style.borderColor = '#00ff88';
+        overlay.style.boxShadow = '0 0 0 9999px rgba(0, 0, 0, 0.4), 0 0 30px #00ff88, inset 0 0 30px rgba(0, 255, 136, 0.3)';
+    }
+</script>
+{% endblock %}

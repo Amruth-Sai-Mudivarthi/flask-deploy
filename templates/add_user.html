@@ -1,0 +1,507 @@
+{% extends "layout.html" %}
+{% block title %}SecureAuth Pro - Add New User{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: url('https://source.unsplash.com/random/1920x1080/?security,dark,faces') no-repeat center center fixed;
+        background-size: cover;
+        color: #f0f0f0;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(10, 10, 20, 0.85);
+        z-index: -1;
+    }
+
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .info-banner {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .info-banner:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .info-banner::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0.7;
+        animation: borderFlow 8s linear infinite;
+        background-size: 300% 300%;
+    }
+
+    @keyframes borderFlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .info-banner .icon {
+        font-size: 3rem;
+        background: linear-gradient(135deg, #4ecdc4 0%, #556270 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .info-banner h5 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .form-section {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .form-label {
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .input-container {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.5);
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .form-control {
+        padding: 18px 20px 18px 50px !important;
+        font-size: 1.1rem;
+        border-radius: 15px !important;
+        transition: all 0.3s ease;
+        position: relative;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    .form-control:focus {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(78, 205, 196, 0.5) !important;
+    }
+
+    .form-control:focus + .input-icon {
+        color: rgba(78, 205, 196, 0.8);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .input-help {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 0.5rem;
+        padding-left: 10px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .submit-section {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .btn-primary {
+        padding: 15px 40px !important;
+        font-size: 1.1rem !important;
+        border-radius: 25px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #4ecdc4 0%, #556270 100%) !important;
+        border: none !important;
+        box-shadow: 0 4px 20px rgba(78, 205, 196, 0.4) !important;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 8px 30px rgba(78, 205, 196, 0.6) !important;
+    }
+
+    .btn-primary:active {
+        transform: translateY(0) !important;
+    }
+
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transition: all 0.5s ease;
+        transform: translate(-50%, -50%);
+    }
+
+    .btn-primary:hover::before {
+        width: 400px;
+        height: 400px;
+    }
+
+    .steps-indicator {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin: 2rem 0;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .step.active {
+        color: #4ecdc4;
+    }
+
+    .step .step-number {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .step.active .step-number {
+        background: linear-gradient(135deg, #4ecdc4 0%, #556270 100%);
+        color: white;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .step-arrow {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 0.8rem;
+    }
+
+    .validation-message {
+        display: none;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+    }
+
+    .validation-message.success {
+        color: #4CAF50;
+        background: rgba(76, 175, 80, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .validation-message.error {
+        color: #f44336;
+        background: rgba(244, 67, 54, 0.15);
+        border: 1px solid rgba(244, 67, 54, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .form-section {
+            padding: 1.5rem;
+        }
+        
+        .steps-indicator {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .step-arrow {
+            transform: rotate(90deg);
+        }
+    }
+
+    /* Animation for form shake */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="info-banner">
+        <i class="fas fa-info-circle icon"></i>
+        <h5>User Registration Process</h5>
+        <p class="mb-0">Create a new user profile before capturing their facial biometrics. The User ID must be unique and will be encoded in their access barcode.</p>
+    </div>
+
+    <div class="steps-indicator">
+        <div class="step active">
+            <div class="step-number">1</div>
+            <span>Add User</span>
+        </div>
+        <i class="fas fa-chevron-right step-arrow"></i>
+        <div class="step">
+            <div class="step-number">2</div>
+            <span>Capture Face</span>
+        </div>
+        <i class="fas fa-chevron-right step-arrow"></i>
+        <div class="step">
+            <div class="step-number">3</div>
+            <span>Train Model</span>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <form method="POST" id="userForm">
+            <div class="form-group">
+                <label for="user_id" class="form-label">
+                    <i class="fas fa-hashtag"></i>
+                    User ID (Number)
+                </label>
+                <div class="input-container">
+                    <input type="number" 
+                           class="form-control" 
+                           id="user_id" 
+                           name="user_id" 
+                           placeholder="Enter unique user ID..." 
+                           required
+                           min="1"
+                           max="99999999999">
+                    <i class="fas fa-id-badge input-icon"></i>
+                </div>
+                <div class="input-help">
+                    <i class="fas fa-lightbulb"></i>
+                    This number will be encoded in the user's barcode and must be unique
+                </div>
+                <div id="user-id-validation" class="validation-message"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="user_name" class="form-label">
+                    <i class="fas fa-user"></i>
+                    Full Name
+                </label>
+                <div class="input-container">
+                    <input type="text" 
+                           class="form-control" 
+                           id="user_name" 
+                           name="user_name" 
+                           placeholder="Enter full name..." 
+                           required
+                           maxlength="100">
+                    <i class="fas fa-signature input-icon"></i>
+                </div>
+                <div class="input-help">
+                    <i class="fas fa-lightbulb"></i>
+                    Enter the user's complete name for identification
+                </div>
+                <div id="user-name-validation" class="validation-message"></div>
+            </div>
+
+            <div class="submit-section">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-arrow-right me-2"></i>
+                    Add User & Proceed to Face Capture
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('userForm');
+        const userIdInput = document.getElementById('user_id');
+        const userNameInput = document.getElementById('user_name');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Real-time validation
+        userIdInput.addEventListener('input', function() {
+            validateUserId(this.value);
+        });
+        
+        userNameInput.addEventListener('input', function() {
+            validateUserName(this.value);
+        });
+        
+        // Add input focus effects
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+                const icon = this.parentElement.querySelector('.input-icon');
+                if (icon) {
+                    icon.style.color = 'rgba(78, 205, 196, 0.8)';
+                    icon.style.transform = 'translateY(-50%) scale(1.1)';
+                }
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+                const icon = this.parentElement.querySelector('.input-icon');
+                if (icon) {
+                    icon.style.color = 'rgba(255, 255, 255, 0.5)';
+                    icon.style.transform = 'translateY(-50%) scale(1)';
+                }
+            });
+        });
+        
+        function validateUserId(value) {
+            const validation = document.getElementById('user-id-validation');
+            
+            if (!value) {
+                validation.style.display = 'none';
+                return false;
+            }
+            
+            const num = parseInt(value);
+            if (num < 1 || num > 99999999999) {
+                showValidation('user-id-validation', 'User ID must be between 1 and 99999999999', 'error');
+                return false;
+            }
+            
+            showValidation('user-id-validation', 'Valid User ID format', 'success');
+            return true;
+        }
+        
+        function validateUserName(value) {
+            const validation = document.getElementById('user-name-validation');
+            
+            if (!value) {
+                validation.style.display = 'none';
+                return false;
+            }
+            
+            if (value.length < 2) {
+                showValidation('user-name-validation', 'Name must be at least 2 characters long', 'error');
+                return false;
+            }
+            
+            if (value.length > 100) {
+                showValidation('user-name-validation', 'Name must be less than 100 characters', 'error');
+                return false;
+            }
+            
+            showValidation('user-name-validation', 'Valid name format', 'success');
+            return true;
+        }
+        
+        function showValidation(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `validation-message ${type}`;
+            element.style.display = 'block';
+        }
+        
+        // Enhanced form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const isValidId = validateUserId(userIdInput.value);
+            const isValidName = validateUserName(userNameInput.value);
+            
+            if (isValidId && isValidName) {
+                // Add loading state to button
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating User...';
+                submitBtn.disabled = true;
+                
+                // Change button style during processing
+                submitBtn.style.background = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)';
+                submitBtn.style.boxShadow = '0 4px 20px rgba(255, 193, 7, 0.4)';
+                
+                // Add some visual feedback before submission
+                setTimeout(() => {
+                    form.submit();
+                }, 800);
+            } else {
+                // Shake the form if validation fails
+                const formSection = document.querySelector('.form-section');
+                formSection.style.animation = 'shake 0.5s ease-in-out';
+                setTimeout(() => {
+                    formSection.style.animation = '';
+                }, 500);
+            }
+        });
+    });
+</script>
+{% endblock %}

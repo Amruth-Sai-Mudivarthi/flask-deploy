@@ -1,0 +1,426 @@
+{% extends "layout.html" %}
+{% block title %}SecureAuth Pro - Face Authentication{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: url('https://source.unsplash.com/random/1920x1080/?dark,tech,abstract') no-repeat center center fixed;
+        background-size: cover;
+        color: #f0f0f0;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(10, 10, 20, 0.85);
+        z-index: -1;
+    }
+
+    .auth-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .auth-header {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .auth-header:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .auth-header::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+        border-radius: 20px;
+        z-index: -1;
+        opacity: 0.7;
+        animation: borderFlow 8s linear infinite;
+        background-size: 300% 300%;
+    }
+
+    @keyframes borderFlow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .auth-header .icon {
+        font-size: 4rem;
+        background: linear-gradient(135deg, #4ecdc4 0%, #556270 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .auth-header h1 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .auth-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .video-section {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .video-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .video-container {
+        position: relative;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 20px;
+        overflow: hidden;
+        width: 100%;
+        height: 400px;
+        border: 3px solid;
+        border-image: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c) 1;
+        box-shadow: 
+            0 0 30px rgba(102, 126, 234, 0.4),
+            inset 0 0 50px rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .video-container:hover {
+        transform: scale(1.02);
+        box-shadow: 
+            0 0 40px rgba(102, 126, 234, 0.6),
+            inset 0 0 50px rgba(255, 255, 255, 0.1);
+    }
+
+    #video-feed {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 17px;
+    }
+
+    .face-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 200px;
+        height: 200px;
+        border: 3px solid;
+        border-image: linear-gradient(45deg, #4ecdc4, #44a08d, #4ecdc4) 1;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        box-shadow: 
+            0 0 0 9999px rgba(0, 0, 0, 0.4),
+            0 0 30px rgba(78, 205, 196, 0.8),
+            inset 0 0 30px rgba(255, 255, 255, 0.1);
+        animation: facePulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes facePulse {
+        0% {
+            border-width: 3px;
+            box-shadow: 
+                0 0 0 9999px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(78, 205, 196, 0.8),
+                inset 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+        100% {
+            border-width: 5px;
+            box-shadow: 
+                0 0 0 9999px rgba(0, 0, 0, 0.3),
+                0 0 50px rgba(78, 205, 196, 1),
+                inset 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    .status-container {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .status-container:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .status-container.success {
+        background: rgba(46, 125, 50, 0.5);
+        border-color: rgba(76, 175, 80, 0.3);
+    }
+
+    .status-container.error {
+        background: rgba(198, 40, 40, 0.5);
+        border-color: rgba(244, 67, 54, 0.3);
+    }
+
+    .status-container.info {
+        background: rgba(30, 35, 50, 0.7);
+        border-color: rgba(79, 172, 254, 0.3);
+    }
+
+    .status-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .status-message {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .status-description {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin-top: 2rem;
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .back-link:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .instructions {
+        background: rgba(30, 35, 50, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .instructions:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .instructions h3 {
+        color: #4ecdc4;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .instructions ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .instructions li {
+        padding: 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .instructions li::before {
+        content: '✓';
+        color: #4ecdc4;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .video-container {
+            height: 300px;
+        }
+        
+        .face-overlay {
+            width: 150px;
+            height: 150px;
+        }
+        
+        .auth-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .auth-header .icon {
+            font-size: 3rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <i class="fas fa-user-circle icon"></i>
+        <h1>Face Authentication</h1>
+        <p>Please face the camera and blink twice to log in</p>
+    </div>
+
+    <div class="instructions">
+        <h3><i class="fas fa-info-circle"></i>Instructions</h3>
+        <ul>
+            <li>Position your face within the circular overlay</li>
+            <li>Ensure good lighting on your face</li>
+            <li>Blink twice naturally when ready</li>
+            <li>Stay still during the authentication process</li>
+        </ul>
+    </div>
+
+    <div class="video-section">
+        <div class="video-container">
+            <img id="video-feed" src="{{ url_for('liveness_feed') }}" alt="Video Feed">
+            <div class="face-overlay"></div>
+        </div>
+    </div>
+
+    <div id="status-container" class="status-container info">
+        <i class="fas fa-spinner fa-spin status-icon"></i>
+        <div class="status-message">Initializing Face Recognition...</div>
+        <div class="status-description">Please wait while we set up the camera</div>
+    </div>
+
+    <div class="text-center">
+        <a href="{{ url_for('index') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusContainer = document.getElementById('status-container');
+        const statusIcon = statusContainer.querySelector('.status-icon');
+        const statusMessage = statusContainer.querySelector('.status-message');
+        const statusDescription = statusContainer.querySelector('.status-description');
+        let intervalId;
+
+        // Function to check the liveness/auth status from the server
+        const checkStatus = () => {
+            fetch("{{ url_for('check_liveness_status') }}")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Status check:", data);
+                    if (data.status === 'success') {
+                        // Success state
+                        statusContainer.className = 'status-container success';
+                        statusIcon.className = 'fas fa-check-circle status-icon';
+                        statusMessage.textContent = 'Authentication Successful!';
+                        statusDescription.textContent = 'Redirecting to dashboard...';
+                        
+                        clearInterval(intervalId);
+                        
+                        // Add success animation
+                        statusContainer.style.animation = 'successPulse 0.5s ease-in-out';
+                        
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 2000);
+                        
+                    } else if (data.status === 'fail') {
+                        // Error state
+                        statusContainer.className = 'status-container error';
+                        statusIcon.className = 'fas fa-exclamation-triangle status-icon';
+                        statusMessage.textContent = 'Authentication Failed';
+                        statusDescription.textContent = data.message || 'Please try again';
+                        
+                        clearInterval(intervalId);
+                        
+                    } else {
+                        // Pending state
+                        statusContainer.className = 'status-container info';
+                        statusIcon.className = 'fas fa-spinner fa-spin status-icon';
+                        statusMessage.textContent = 'Please follow the on-screen instructions...';
+                        statusDescription.textContent = 'Blink twice when ready';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching status:', error);
+                    statusContainer.className = 'status-container error';
+                    statusIcon.className = 'fas fa-exclamation-triangle status-icon';
+                    statusMessage.textContent = 'Connection Error';
+                    statusDescription.textContent = 'Unable to communicate with the server';
+                    clearInterval(intervalId);
+                });
+        };
+
+        // Start polling every 2 seconds
+        intervalId = setInterval(checkStatus, 2000);
+
+        // Add success animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes successPulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+</script>
+{% endblock %}
