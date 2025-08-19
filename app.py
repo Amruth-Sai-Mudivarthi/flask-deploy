@@ -484,5 +484,3 @@ def train_model():
     flash(f"Model trained successfully on {num_users} user(s).", "success")
     return redirect(url_for('index'))
 
-if __name__ == "__main__":
-    app.run()
