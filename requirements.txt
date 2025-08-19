@@ -3,7 +3,7 @@ opencv-python==4.8.1.78
 opencv-contrib-python==4.8.1.78
 pyzbar==0.1.9
 Pillow>=10.3.0
-pandas==2.1.2
+pandas>=2.2.0
 numpy==1.26.2
 gunicorn
 python-dotenv
